@@ -36,7 +36,6 @@ typedef unsigned __int64 uint64_t;
 #include <string.h>
 #include <limits.h>
 }
-
 #include "crow/common.h"
 namespace crow
 {

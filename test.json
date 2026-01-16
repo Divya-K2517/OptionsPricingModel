@@ -1,0 +1,9 @@
+{
+  "spotPrice": 100,
+  "strikePrice": 100,
+  "timeToMaturity": 1.0,
+  "riskFreeRate": 0.05,
+  "volatility": 0.2,
+  "simulations": 100000,
+  "optionType": "call"
+}

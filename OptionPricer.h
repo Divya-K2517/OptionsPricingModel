@@ -8,6 +8,10 @@
 #include <algorithm>
 #include <numeric>
 
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
 // Enum for option types - better than string comparisons
 enum class OptionType {
     CALL, //buying

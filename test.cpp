@@ -2,6 +2,9 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include "OptionPricer.h"
+
+
 
 void printGreeks(const Greeks& g) {
     std::cout << std::fixed << std::setprecision(6);

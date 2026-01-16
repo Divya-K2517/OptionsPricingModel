@@ -1,8 +1,15 @@
 #include "include/crow.h"
 //#include "crow_all.h"
 #include "OptionPricer.h"
-#include hrono>
-#include math>
+#include <chrono>
+#include <cmath>
+
+//for testing the server endpoints
+//to start server:
+//g++ -std=c++20 server.cpp OptionPricer.cpp -Iinclude -O2 -pthread -o option_server.exe -lws2_32 -lmswsock
+//to send a test request using the test.json file:
+//curl.exe -X POST http://localhost:8080/price -H "Content-Type: application/json" -d "@test.json"
+
 
 OptionType parseOptionType(const std::string& s) {
     return (s == "put" || s == "PUT") ? OptionType::PUT : OptionType::CALL;
