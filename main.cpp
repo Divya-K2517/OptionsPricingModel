@@ -126,12 +126,15 @@ Greeks OptionPricer::calculateGreeks(OptionType type) const {
     }
     
     //gamma: ∂²V/∂S² (same for calls and puts), sensitivity of delta to stock price
+    //high gamma means delta changes rapidly with stock price, low gamma means delta is stable
     greeks.gamma = normalPDF(d1) / (S_ * sigma_ * sqrt_T);
     
     //vega: ∂V/∂σ (same for calls and puts), sensitivity to volatility
+    //how option price changes with every 1% volatility increase
     greeks.vega = S_ * normalPDF(d1) * sqrt_T;
     
     //theta: ∂V/∂t, sensitivity to time
+    //how much value the option loses per day
     const double theta_common = -(S_ * normalPDF(d1) * sigma_) / (2.0 * sqrt_T);
     if (type == OptionType::CALL) {
         greeks.theta = theta_common - r_ * K_ * discount * normalCDF(d2);
@@ -147,45 +150,48 @@ Greeks OptionPricer::calculateGreeks(OptionType type) const {
     } else {
         greeks.rho = -K_ * T_ * discount * normalCDF(-d2);
     }
-    // Convert to per 1% change
+    //convert to per 1% change
     greeks.rho /= 100.0;
     
     return greeks;
 }
 
-// Newton-Raphson for implied volatility
-// This is what traders actually use - reverse engineer volatility from market price
+//newton-Raphson for implied volatility
+//reverse engineer volatility from market price
 double OptionPricer::impliedVolatility(double market_price, OptionType type, 
                                        double tolerance, int max_iter) const {
-    // Initial guess: ATM implied vol approximation
+    //tolerance: how close to the market price we need to be
+    //max_iter: maximum number of iterations to prevent infinite loops
+    
+    //initial guess: at the money(ATM) implied vol approximation
     double sigma_guess = std::sqrt(2.0 * M_PI / T_) * (market_price / S_);
     
     for (int i = 0; i < max_iter; ++i) {
-        // Create temporary pricer with guessed volatility
+        //create temporary pricer with guessed volatility
         OptionPricer temp_pricer(S_, K_, T_, r_, sigma_guess);
         
-        // Calculate price and vega with current guess
+        //calculate price and vega with current guess
         double price = temp_pricer.blackScholes(type);
         Greeks greeks = temp_pricer.calculateGreeks(type);
         
-        // Price difference
+        //price difference
         double diff = price - market_price;
         
-        // Check convergence
+        //check convergence, if within tolerance, return guess
         if (std::abs(diff) < tolerance) {
             return sigma_guess;
         }
         
-        // Newton-Raphson update: σ_new = σ_old - f(σ)/f'(σ)
-        // f(σ) = BS_price(σ) - market_price
-        // f'(σ) = vega
+        //Newton-Raphson update: σ_new = σ_old - f(σ)/f'(σ)
+        //f(σ) = BS_price(σ) - market_price
+        //f'(σ) = vega
         sigma_guess -= diff / greeks.vega;
         
-        // Ensure volatility stays positive
+        //ensure volatility stays positive
         sigma_guess = std::max(sigma_guess, 1e-6);
     }
     
-    return sigma_guess;  // Return best guess if didn't converge
+    return sigma_guess;  //return best guess if didn't converge
 }
 
 // Example usage and testing
