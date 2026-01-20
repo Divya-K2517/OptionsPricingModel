@@ -34,9 +34,26 @@ const OptionPricingApp = () => {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const response = await fetch(`${API_URL}/price`, { method: 'OPTIONS' });
-        setBackendStatus('connected');
-      } catch {
+        const response = await fetch(`${API_URL}/price`, { method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            spotPrice: 100,
+            strikePrice: 100,
+            timeToMaturity: 1.0,
+            riskFreeRate: 0.05,
+            volatility: 0.20,
+            simulations: 1000,
+            optionType: 'call'
+          })
+       });
+       const data = await response.json();
+       if (data && data.bsPrice !== undefined) {
+          setBackendStatus('connected');
+       } else {
+          setBackendStatus('disconnected');
+       }
+      } catch (err) {
+        console.error('Backend check failed:', err);
         setBackendStatus('disconnected');
       }
     };

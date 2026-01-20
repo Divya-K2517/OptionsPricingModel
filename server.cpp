@@ -3,10 +3,13 @@
 #include "OptionPricer.h"
 #include <chrono>
 #include <cmath>
+#include "crow/middlewares/cors.h"
 
 //for testing the server endpoints
 //to start server:
 //g++ -std=c++20 server.cpp OptionPricer.cpp -Iinclude -O2 -pthread -o option_server.exe -lws2_32 -lmswsock
+//./option_server.exe
+
 //to send a test request using the test.json file:
 //curl.exe -X POST http://localhost:8080/price -H "Content-Type: application/json" -d "@test.json"
 
@@ -16,7 +19,14 @@ OptionType parseOptionType(const std::string& s) {
 }
 
 int main() {
-    crow::SimpleApp app;
+    crow::App<crow::CORSHandler> app;
+
+    //crow CORS middleware setup
+    auto& cors = app.get_middleware<crow::CORSHandler>();
+    cors.global()
+        .origin("*") //allows any origin
+        .methods("POST"_method, "OPTIONS"_method)
+        .headers("Content-Type");
 
     //main pricing endpoint
     CROW_ROUTE(app, "/price").methods(crow::HTTPMethod::Post)
@@ -24,6 +34,7 @@ int main() {
         auto body = crow::json::load(req.body);
         if (!body) {
             crow::response res(400);
+            res.set_header("Access-Control-Allow-Origin", "*");
             res.write("{\"error\":\"Invalid JSON\"}");
             return res;
         }
@@ -87,6 +98,7 @@ int main() {
         auto body = crow::json::load(req.body); //load JSON from request body
         if (!body) {
             crow::response res(400);
+            res.set_header("Access-Control-Allow-Origin", "*");
             res.write("{\"error\":\"Invalid JSON\"}");
             return res;
         }   
@@ -117,20 +129,6 @@ int main() {
         res.write(out.dump());
         return res;
     });
-
-    // // Preflight for CORS (optional if you stick to simple POSTs)
-    // CROW_ROUTE(app, "/<path>")
-    // ([](const crow::request& req, std::string) {
-    //     if (req.method == crow::HTTPMethod::Options) {
-    //         crow::response res;
-    //         res.code = 204;
-    //         res.set_header("Access-Control-Allow-Origin", "*");
-    //         res.set_header("Access-Control-Allow-Headers", "Content-Type");
-    //         res.set_header("Access-Control-Allow-Methods", "POST, OPTIONS");
-    //         return res;
-    //     }
-    //     return crow::response(404);
-    // });
 
     app.port(8080).multithreaded().run(); //start server
 }
