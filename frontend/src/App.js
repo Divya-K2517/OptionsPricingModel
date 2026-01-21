@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
-import { TrendingUp, Zap, Calculator, Activity, Brain, AlertCircle, Loader, CheckCircle } from 'lucide-react';
+import { TrendingUp, Zap, Calculator, Activity, Brain, AlertCircle, Loader, CheckCircle, TrendingUpDown, Omega } from 'lucide-react';
 
 const API_URL = 'http://localhost:8080';
 
@@ -214,9 +214,10 @@ const OptionPricingApp = () => {
           <div className="flex gap-1">
             {[
               { id: 'pricing', label: 'Real-Time Pricing', icon: Calculator },
-              { id: 'greeks', label: 'Greeks Analysis', icon: TrendingUp },
-              { id: 'implied-vol', label: 'Implied Volatility', icon: Brain },
-              { id: 'visualizations', label: 'Sensitivity', icon: Activity }
+              { id: 'greeks', label: 'Greeks Analysis', icon: Omega },
+              { id: 'implied-vol', label: 'Implied Volatility', icon: TrendingUpDown },
+              { id: 'visualizations', label: 'Sensitivity', icon: Activity },
+              {id: 'theory', label: 'Model Theory', icon: Brain}
             ].map(tab => (
               <button
                 key={tab.id}
@@ -508,7 +509,7 @@ const OptionPricingApp = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-800">
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Brain className="w-5 h-5 text-purple-400" />
+                <TrendingUpDown className="w-5 h-5 text-purple-400" />
                 Implied Volatility Calculator
               </h3>
               
@@ -673,6 +674,163 @@ const OptionPricingApp = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+        {/* Theory Tab */}
+        {activeTab === 'theory' && (
+          <div className="space-y-8">
+
+            {/* Overview */}
+            <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-800">
+              <h2 className="text-2xl font-bold mb-3">How Option Pricing Works</h2>
+              <p className="text-slate-300 leading-relaxed">
+                This engine estimates how much an option is worth using two methods: 
+                an <strong>analytical model (Black–Scholes)</strong> and a
+                 <strong> simulation-based model (Monte Carlo)</strong>.
+                Both rely on the same underlying assumptions about how markets behave,
+                but arrive at prices in fundamentally different ways.
+              </p>
+              <p className="text-slate-400 mt-2">
+                Simply put,
+                <br />• Black–Scholes gives a quick, exact answer using math.
+                <br />• Monte Carlo gives an estimated answer by simulating many “what if” price paths.
+              </p>
+            </div>
+
+            {/* Black-Scholes */}
+            <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-800">
+              <h3 className="text-xl font-semibold mb-4 text-green-400">
+                Black–Scholes Model (Analytical Pricing)
+              </h3>
+
+              <p className="text-slate-300 mb-4">
+                The <strong>Black–Scholes model</strong> is a famous formula used to calculate fair prices
+                for European call and put options. It assumes the stock price changes smoothly over time
+                (like a random walk) with constant volatility and interest rates. This is called <strong>geometric Brownian motion. </strong>
+                This gives us a <strong>closed-form solution</strong>, so you can plug in numbers
+                and immediately get a price.
+              </p>
+
+              <div className="space-y-3 text-sm text-slate-300">
+                <p><strong>Key Assumptions:</strong></p>
+                <ul className="list-disc list-inside text-slate-400">
+                  <li>Log-normal stock price distribution (stock price cant go negative)</li>
+                  <li>Constant volatility and risk-free rate</li>
+                  <li>No arbitrage(risk free profit) opportunities</li>
+                  <li>Options are only exercised at expiration (European-style)</li>
+                </ul>
+              </div>
+
+              <div className="mt-6 bg-slate-800/60 rounded-xl p-4">
+                <p className="font-mono text-sm text-yellow-300 mb-2">
+                  Call Option Price:
+                </p>
+                <p className="font-mono text-slate-200">
+                  C = S·N(d₁) - K·e⁻ʳᵀ·N(d₂)
+                </p>
+                <p className="font-mono text-slate-200 mt-2">
+                  d₁ = [ln(S/K) + (r + ½σ²)T] / (σ√T)
+                </p>
+                <p className="font-mono text-slate-200">
+                  d₂ = d₁ - σ√T
+                </p>
+              </div>
+              {/* Variable Explanations */}
+              <div className="bg-slate-800/40 rounded-xl p-4 text-slate-300 text-sm">
+                <p className="font-semibold text-green-400 mb-2">Variable Explanations</p>
+                <ul className="space-y-1">
+                  <li><strong>S</strong> = Current stock price</li>
+                  <li><strong>K</strong> = Strike price (agreed exercise price)</li>
+                  <li><strong>r</strong> = Risk-free interest rate</li>
+                  <li><strong>T</strong> = Time to expiration (in years)</li>
+                  <li><strong>σ</strong> = Volatility (expected price fluctuation)</li>
+                  <li><strong>N(x)</strong> = Cumulative normal probability function</li>
+                </ul>
+              </div>
+              <p className="mt-4 text-slate-300">
+                The Black–Scholes formula works fast and exactly for simple (European) options. 
+                It’s often used as a <strong>benchmark</strong> to compare against more complex pricing methods.
+              </p>
+            </div>
+
+            {/* Monte Carlo */}
+            <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-800">
+              <h3 className="text-xl font-semibold mb-4 text-blue-400">
+                Monte Carlo Simulation (Stochastic Pricing)
+              </h3>
+
+              <p className="text-slate-300 mb-4">
+                <strong>Monte Carlo </strong>pricing takes a fundamentally different approach.
+                Instead of using one formula, it simulates thousands of <strong>possible future stock prices </strong>
+        using random sampling and then <strong>averages the results</strong>. This method is especially useful for pricing
+        complex options where no closed-form solution exists.
+              </p>
+
+              <div className="space-y-3 text-sm text-slate-300">
+                <p><strong>Stock price evolution:</strong></p>
+                <div className="bg-slate-800/60 rounded-xl p-4 font-mono text-slate-200">
+                  Sₜ = S₀ · exp[(r − ½σ²)T + σ√T · Z]
+                </div>
+                <div className="bg-slate-800/40 rounded-xl p-4 text-slate-300 text-sm">
+                <p className="font-semibold text-blue-400 mb-2">Variable Explanations</p>
+                <ul className="space-y-1">
+                  <li><strong>S₀</strong> = Starting stock price</li>
+                  <li><strong>Sₜ</strong> = Simulated stock price at time T</li>
+                  <li><strong>Z</strong> = Random number from normal distribution</li>
+                  <li><strong>r</strong> = Risk-free interest rate</li>
+                  <li><strong>T</strong> = Time to expiration (in years)</li>
+                  <li><strong>σ</strong> = Volatility (expected price fluctuation)</li>
+                </ul>
+              </div>
+
+                <p className="mt-3"><strong>Procedure:</strong></p>
+                <ul className="list-decimal list-inside text-slate-400">
+                  <li>Generate random normal variables Z, which represent possible market changes</li>
+                  <li>Simulate stock prices Sₜ at end of time T using the formula above</li>
+                  <li>Calculate the option's payoff(how much the option is worth at expiration): <code>max(Sₜ − K, 0)</code></li>
+                  <li>Average the payoffs the average payoff back to present value</li>
+                </ul>
+              </div>
+
+              <p className="mt-4 text-slate-300">
+                Monte Carlo pricing is <strong>slower</strong> than Black–Scholes,
+                but far more <strong>flexible</strong>. They extend naturally to
+                path-dependent options, complex payoffs, and multi-asset products.
+              </p>
+            </div>
+
+            {/* Comparison */}
+            <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-800">
+              <h3 className="text-xl font-semibold mb-4">Why Use Both?</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                  <h4 className="font-semibold text-green-400 mb-2">Black–Scholes</h4>
+                  <ul className="list-disc list-inside text-slate-300">
+                    <li>Extremely fast</li>
+                    <li>Exact solution</li>
+                    <li>Gives analyticalGreeks</li>
+                    <li>Limited assumptions, only works for simple European style options</li>
+                  </ul>
+                </div>
+
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-400 mb-2">Monte Carlo</h4>
+                  <ul className="list-disc list-inside text-slate-300">
+                    <li>Highly flexible</li>
+                    <li>Model-agnostic, easy to extend</li>
+                    <li>Scales to complex products</li>
+                    <li>Accuracy improves with more simulations</li>
+                  </ul>
+                </div>
+              </div>
+
+              <p className="mt-4 text-slate-300">
+                By comparing Monte Carlo results to Black-Scholes,
+                we can <strong>measure how well our simulation works </strong>
+                and watch the results <strong>converge</strong> toward the true theoretical price.
+              </p>
             </div>
           </div>
         )}
